@@ -1,14 +1,17 @@
-# A Parser from A to B is a function that takes A and returns
-# a Parsing Result where the 'value' is a Tree of B and the 'rest'
-# is a B
-# 
-# e.g. a Parser<String, Syntax> will consume a string and return a Parsing
-# Result that contains a Tree of Syntax and a String of the Remainder to 
-# Parse.
+###
 
-# Parser<A, B> := Function<A, ParsingResult<B, A>
-# 
-# ParsingResult<B, A> := { Tree<B> value, A rest }
+A Parser from A to B is a function that takes A and returns
+a Parsing Result where the 'value' is a Tree of B and the 'rest'
+is a B
+ 
+e.g. a Parser<String, Syntax> will consume a string and return a Parsing
+Result that contains a Tree of Syntax and a String of the Remainder to 
+Parse.
+ 
+Parser<A, B> := Function<A, ParsingResult<B, A>>
+
+ParsingResult<B, A> := { Tree<B> value, A rest }
+###
 
 type = (obj) ->
     switch obj
@@ -18,27 +21,34 @@ type = (obj) ->
             Object::toString.call(obj).slice(8, -1)
 
 class Parser
+    # A class to wrap a Function<string, ParseResult>
+    # because of my OO religion
     parse: (input) ->
         throw new Error 'Not Implemented'
 
+    # 'parse' should be a Function<string, ParseResult>
     @wrap: (parse) ->
         parser = new Parser()
         parser.parse = parse
 
         return parser
 
+    # Shortcuts for defining the most common
+    # simple parser types
     @from: (obj) ->
         return obj if obj instanceof Parser
 
         switch type obj
             when 'String'
                 new Parser.Exactly obj
-            when 'Regexp'
+
+            when 'RegExp'
                 new Parser.RegExp obj
+
             when 'Function'
                 Parser.wrap obj
             else
-                throw new TypeError()
+                throw new TypeError("wtf is #{obj}")
 
 class ParseResult
     constructor: (@value, @rest) ->
@@ -140,17 +150,24 @@ Parser::inverse = (makeParser) ->
             makeParser().parse(input)
 
 OR = (parser, rest...) ->
-    NOT(parser).bind (value) ->
+    Parser.wrap (input) ->
+        parser = Parser.from(parser)
+        result = parser.parse(input)
+        
+        unless result instanceof ParseFailure
+            return result
+
         if rest.length is 0
-            new Parser.Fail()
+            new ParseFailure()
         else
-            OR(rest...)
+            OR(rest...).parse(input)
 
 NOT = (parser) ->
     Parser.wrap (input) ->
+        parser = Parser.from(parser)
         result = parser.parse input
 
-        if result instanceof ParseFailure()
+        if result instanceof ParseFailure
             new ParseResult(true, input)
         else
             new ParseFailure
@@ -180,30 +197,20 @@ DO = (table) ->
 
             throw new TypeError unless _function?
 
-            _function.call(env).bind (value) ->
+            Parser.from(_function.call(env)).bind (value) ->
                 env[key] = value
                 _DO(rest)
 
     _DO(pairs)
 
-eqChar = (char) ->
-    new Parser.Item().bind (value) ->
-        if value is char
-            new Parser.Result(char)
-        else
-            new Parser.Fail()
+parseParen = DO
+    open: -> '('
+    middle: -> /^[a-z]+/
+    end: -> ')'
 
-eqString = (string) ->
-    if string.length is 0
-        new Parser.Result('')
-    else
-        DO
-            ch: -> eqChar string[0]
-            _ : -> eqString string[1..]
+    returns: ->
+        new Parser.Result @middle
 
-            returns: ->
-                new Parser.Result(string)
 
-foo = eqString('foo')
-
-console.log foo.parse 'foobar'
+console.log parseParen.parse('(foo)').value # 'foo'
+console.log OR(parseParen, /^f+/, '(').parse('(foo7') # '(foo7'
