@@ -177,9 +177,11 @@ DO = (table) ->
         else
             [first, rest...] = pairs
             [key, _function] = first
+
             throw new TypeError unless _function?
-            env[key] = _function.call(env)
-            env[key].bind (value) ->
+
+            _function.call(env).bind (value) ->
+                env[key] = value
                 _DO(rest)
 
     _DO(pairs)
