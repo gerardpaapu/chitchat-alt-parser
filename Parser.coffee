@@ -139,14 +139,21 @@ Parser::inverse = (makeParser) ->
         @parse(input).otherwise () ->
             makeParser().parse(input)
 
-
-OR = (parser, parsers...) ->
-    Parser.from(parser).inverse ->
-        if parsers.length is 0
+OR = (parser, rest...) ->
+    NOT(parser).bind (value) ->
+        if rest.length is 0
             new Parser.Fail()
         else
-            OR(parsers...)
+            OR(rest...)
 
+NOT = (parser) ->
+    Parser.wrap (input) ->
+        result = parser.parse input
+
+        if result instanceof ParseFailure()
+            new ParseResult(true, input)
+        else
+            new ParseFailure
 
 AND = (parser, rest...) ->
     Parser.from(parser).bind (value) ->
@@ -154,3 +161,47 @@ AND = (parser, rest...) ->
             new Parser.Result(value)
         else
             AND(rest...)
+
+DO = (table) ->
+    returns = table.returns
+    delete table.returns
+
+    throw new TypeError() unless returns?
+
+    pairs =([key, value] for key, value of table)
+    env = {}
+
+    _DO = (pairs) ->
+        if pairs.length is 0
+            returns.call env
+        else
+            [first, rest...] = pairs
+            [key, _function] = first
+            throw new TypeError unless _function?
+            env[key] = _function.call(env)
+            env[key].bind (value) ->
+                _DO(rest)
+
+    _DO(pairs)
+
+eqChar = (char) ->
+    new Parser.Item().bind (value) ->
+        if value is char
+            new Parser.Result(char)
+        else
+            new Parser.Fail()
+
+eqString = (string) ->
+    if string.length is 0
+        new Parser.Result('')
+    else
+        DO
+            ch: -> eqChar string[0]
+            _ : -> eqString string[1..]
+
+            returns: ->
+                new Parser.Result(string)
+
+foo = eqString('foo')
+
+console.log foo.parse 'foobar'
