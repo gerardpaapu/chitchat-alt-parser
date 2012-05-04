@@ -326,6 +326,18 @@ Parser::surroundedBy = (open, close) ->
         returns: ->
             new Parser.Result @body
 
+class Parser.Trace extends Parser
+    constructor: (parser) ->
+        @parser = Parser.from parser
+
+    parse: (input) ->
+        console.log 'TRACE (before):', input[0..10]
+        @parser.parse(input).then (value, input) ->
+            console.log "TRACE (value): #{value} "
+            console.log "TRACE (after): #{input[0..10]}"
+            new ParseResult value, input
+
+
 Parser::separatedBy = (comma) ->
     parser = this
     _comma = Parser.from(comma)
