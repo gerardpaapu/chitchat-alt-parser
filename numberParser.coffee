@@ -2,9 +2,9 @@
 Parsing Numbers
 -------
 
-We allow three types of number literals
+We allow four types of number literals
 
-- JSON numbers
+- JSON style decimal literals (except leading zeros are legal)
 - Hexadecimal integers start with '0x' followed by 0-9 a-f (case insensitive)
 - Binary integers start with '0b' followed by '0' or '1'
 - Octal integers start with '0o' followed by [0-7]+
@@ -14,7 +14,7 @@ We allow three types of number literals
 jsonNumberParser = ->
 	Parser.Sequence(
 		Maybe('-', ''),
-		OR('0', /^[1-9][0-9]*/),
+		/^[0-9]+/,
 		Maybe(/^\.[0-9]+/, ''),
 		Maybe(/^e(\+|\-)?[0-9]+/i, '')
 	).convert((x) -> parseFloat(x.join(''), 10))
@@ -35,5 +35,3 @@ numberParser = ->
 	OR binaryLiteralParser(), hexLiteral(), octalLiteral(), jsonNumberParser()
 
 exports.numberParser = numberParser
-
-# TODO: Fail on bad leading zeros '00.7', '-00', '07'
