@@ -127,8 +127,9 @@ cloneRegexp = (source) ->
     return destination
 
 class Parser.RegExp extends Parser
-    constructor: (pattern) ->
+    constructor: (pattern, index) ->
         @_pattern = pattern
+        @index = index ? 0
 
     getPattern: ->
         # clone the RegExp each time we use it
@@ -140,7 +141,8 @@ class Parser.RegExp extends Parser
         match = @getPattern().exec(input)
 
         if match?
-            new ParseResult(match[0], input.slice(match[0].length))
+            val = match[@index]
+            new ParseResult(val, input.slice(match[0].length))
         else
             new ParseFailure()
 
@@ -188,11 +190,14 @@ exports.OR = OR
 
 Maybe = (parser, _default) ->
     Parser.wrap (input) ->
+        parser = Parser.from(parser)
         result = parser.parse(input)
         if result instanceof ParseFailure
             new ParseResult(_default, input)
         else
             result
+
+exports.Maybe = Maybe
 
 Parser::maybe = (_default) ->
     Maybe this, _default
