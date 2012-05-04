@@ -20,6 +20,11 @@ type = (obj) ->
         else
             Object::toString.call(obj).slice(8, -1)
 
+prepend = (item, array) ->
+    throw new TypeError unless type(array) is 'Array'
+    [ item ].concat(array)
+
+
 class Parser
     constructor: (arg) ->
         if arguments.length > 0
@@ -63,12 +68,16 @@ exports.Parser = Parser
 class ParseResult
     constructor: (@value, @rest) ->
 
+    failed: false
+
     then: (_function) ->
         _function(@value, @rest)
 
 class ParseFailure extends ParseResult
     constructor: ->
         ParseFailure.instance ?= @
+
+    failed: true
 
     then: (makeParser) ->
         new ParseFailure
@@ -255,7 +264,7 @@ OneOrMore = (parser) ->
         rest: -> OneOrMore(parser).maybe([])
 
         returns: ->
-            new Parser.Result [@first].concat(@rest)
+            new Parser.Result prepend(@first, @rest)
 
 Parser::oneOrMore = -> 
     OneOrMore this
@@ -279,14 +288,15 @@ Parser::ignoreWhitespace = ->
     ignoreWhitespace this
 
 Sequence = Parser.Sequence = (parser, rest...) ->
-    return parser if rest.length is 0
+    if rest.length is 0
+        return Parser.from(parser).convert (x) -> [x]
 
     DO
         first: -> parser
         rest: -> Sequence rest...
 
         returns: ->
-            new Parser.Result [@first].concat(@rest)
+            new Parser.Result prepend(@first, @rest)
 
 Parser.Sequence = Sequence
 
@@ -333,12 +343,13 @@ class Parser.Trace extends Parser
         @parser = Parser.from parser
 
     parse: (input) ->
-        console.log 'TRACE (before):', input[0..10]
+        console.log "TRACE (before): #{input[0..10]}"
         @parser.parse(input).then (value, input) ->
             console.log "TRACE (value): #{value} "
             console.log "TRACE (after): #{input[0..10]}"
             new ParseResult value, input
 
+Parser::trace = -> new Parser.Trace this
 
 Parser::separatedBy = (comma) ->
     parser = this
@@ -349,7 +360,7 @@ Parser::separatedBy = (comma) ->
         rest: -> _comma.and(parser).zeroOrMore()
 
         returns: ->
-            new Parser.Result [@first].concat(@rest)
+            new Parser.Result prepend(@first, @rest)
 
 
 Parser::followedBy = (suffix) ->

@@ -10,11 +10,10 @@ digitsListParser = ->
 console.log digitsListParser().parse('(2 , 321 , 88,  1, 7)').value 
 # logs [ 2, 321, 88, 1, 7 ]
 
-
 # simpleTableParser (foo)  returns
 # a parser that parses a table of foo
 simpleTableParser = (parser) ->
-    # parse a single value for the table
+    # parse a single entry in the table
     valueParser = ->
         OR(parser, simpleTableParser parser)
             .ignoreWhitespace()
@@ -32,7 +31,7 @@ simpleTableParser = (parser) ->
         table = {}
 
         for [key, value] in pairs
-            throw new SyntaxError() if table[key]?
+            throw new SyntaxError("#{key} already in table") if table[key]?
             table[key] = value
 
         table
@@ -43,17 +42,20 @@ simpleTableParser = (parser) ->
         .surroundedBy('{', '}')
         .ignoreWhitespace()
         .convert(associate)
-           
-
 
 console.log simpleTableParser(digitsListParser()).parse("
 {
     foo: (1, 3, 4),
     bar: (44, 7),
     baz: (000, 433),
-    quux: { butt: (1), face: (3, 4)}
+    quux: { 
+        butt: (1), 
+        face: (3, 4)
+    }
 }
 ").value
+
+
 
 
 
