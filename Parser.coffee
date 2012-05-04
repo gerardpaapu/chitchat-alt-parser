@@ -378,6 +378,8 @@ Parser::followedBy = (suffix) ->
         returns: ->
             new Parser.Result @x
 
+Parser::skipWhitespace = ->
+    @followedBy /^\s*/
 
 Parser::plus = (parser) ->
     Sequence this, parser

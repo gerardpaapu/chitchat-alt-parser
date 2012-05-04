@@ -20,7 +20,7 @@ jsonNumberParser = ->
 	).convert((x) -> parseFloat(x.join(''), 10))
 
 binaryLiteralParser = ->
-	new Parser.RegExp(/^0b([0-1]+)/, 1).trace()
+	new Parser.RegExp(/^0b([0-1]+)/, 1)
 		.convert((x) -> parseInt(x, 2))
 
 hexLiteral = ->
@@ -35,3 +35,5 @@ numberParser = ->
 	OR binaryLiteralParser(), hexLiteral(), octalLiteral(), jsonNumberParser()
 
 exports.numberParser = numberParser
+
+console.log numberParser().parse('0o777').value
