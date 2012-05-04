@@ -208,7 +208,15 @@ AND = (parser, rest...) ->
 Parser::and = (parsers...) ->
     AND this, parsers...
 
+
 DO = (table) ->
+    cloneEnv = (obj) ->
+        table = {}
+        for key, value of obj
+            table[key] = value
+
+        table
+
     returns = table.returns
     delete table.returns
 
@@ -217,7 +225,8 @@ DO = (table) ->
     pairs =([key, value] for key, value of table)
     env = {}
 
-    _DO = (pairs) ->
+    _DO = (pairs, env) ->
+
         if pairs.length is 0
             returns.call env
         else
@@ -226,11 +235,17 @@ DO = (table) ->
 
             throw new TypeError unless _function?
 
-            Parser.from(_function.call(env)).bind (value) ->
-                env[key] = value
-                _DO(rest)
+            parser = _function.call(env)
 
-    _DO(pairs)
+            unless parser?
+                throw new TypeError "bad parser @ #{key}" 
+
+            Parser.from(parser).bind (value) ->
+                env[key] = value
+                _DO(rest, cloneEnv(env))
+
+    Parser.from (input) ->
+        _DO(pairs, cloneEnv(env)).parse(input)
 
 exports.DO = DO
 
