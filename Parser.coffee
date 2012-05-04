@@ -21,6 +21,10 @@ type = (obj) ->
             Object::toString.call(obj).slice(8, -1)
 
 class Parser
+    constructor: (arg) ->
+        if arguments.length > 0
+            return Parser.from arg
+
     # A class to wrap a Function<string, ParseResult>
     # because of my OO religion
     parse: (input) ->
@@ -47,8 +51,14 @@ class Parser
 
             when 'Function'
                 Parser.wrap obj
+
+            when 'Array'
+                Parser.Sequence obj...
+
             else
                 throw new TypeError("wtf is #{obj}")
+
+exports.Parser = Parser
 
 class ParseResult
     constructor: (@value, @rest) ->
@@ -162,6 +172,22 @@ OR = (parser, rest...) ->
         else
             OR(rest...).parse(input)
 
+Parser::or = (parsers...) ->
+    OR(this, parsers...)
+
+exports.OR = OR
+
+Maybe = (parser, _default) ->
+    Parser.wrap (input) ->
+        result = parser.parse(input)
+        if result instanceof ParseFailure
+            new ParseResult(_default, input)
+        else
+            result
+
+Parser::maybe = (_default) ->
+    Maybe this, _default
+
 NOT = (parser) ->
     Parser.wrap (input) ->
         parser = Parser.from(parser)
@@ -178,6 +204,9 @@ AND = (parser, rest...) ->
             new Parser.Result(value)
         else
             AND(rest...)
+
+Parser::and = (parsers...) ->
+    AND this, parsers...
 
 DO = (table) ->
     returns = table.returns
@@ -203,14 +232,92 @@ DO = (table) ->
 
     _DO(pairs)
 
-parseParen = DO
-    open: -> '('
-    middle: -> /^[a-z]+/
-    end: -> ')'
+exports.DO = DO
 
-    returns: ->
-        new Parser.Result @middle
+OneOrMore = (parser) ->
+    DO
+        first: -> parser
+        rest: -> OneOrMore(parser).maybe([])
 
+        returns: ->
+            new Parser.Result [@first].concat(@rest)
 
-console.log parseParen.parse('(foo)').value # 'foo'
-console.log OR(parseParen, /^f+/, '(').parse('(foo7') # '(foo7'
+Parser::oneOrMore = -> 
+    OneOrMore this
+
+ZeroOrMore = (parser) ->
+    OneOrMore(parser).maybe([])
+
+Parser::zeroOrMore = ->
+    ZeroOrMore this
+
+ignoreWhitespace = (parser) ->
+    DO 
+        leading: -> /^\s*/,
+        body: -> parser
+        trailing: -> /^\s*/
+
+        returns: ->
+            new Parser.Result @body
+
+Parser::ignoreWhitespace = ->
+    ignoreWhitespace this
+
+Sequence = Parser.Sequence = (parser, rest...) ->
+    return parser if rest.length is 0
+
+    DO
+        first: -> parser
+        rest: -> Sequence rest...
+
+        returns: ->
+            new Parser.Result [@first].concat(@rest)
+
+IS = (parser, predicate) ->
+    parser.bind (value) ->
+        if predicate value
+            new Parser.Result value
+        else
+            new Parser.Fail()
+
+ISNT = (parser, predicate) ->
+    parser.bind (value) ->
+        if predicate value
+            new Parser.Fail()
+        else
+            new Parser.Result(value)
+
+Parser::is = (predicate) ->
+    IS this, predicate
+
+Parser::isnt = (predicate) ->
+    ISNT this, predicate
+
+Parser::convert = (converter) ->
+    @bind (value) ->
+        new Parser.Result converter(value)
+
+Parser::convertTo = (Klass) ->
+    @bind (value) ->
+        new Parser.Result new Klass(value)
+
+Parser::surroundedBy = (open, close) ->
+    parser = this
+    DO
+        open: -> open
+        body: -> parser
+        close: -> close
+
+        returns: ->
+            new Parser.Result @body
+
+Parser::separatedBy = (comma) ->
+    parser = this
+    _comma = Parser.from(comma)
+
+    DO
+        first: -> parser
+        rest: -> _comma.and(parser).zeroOrMore()
+
+        returns: ->
+            new Parser.Result [@first].concat(@rest)
