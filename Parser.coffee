@@ -288,6 +288,8 @@ Sequence = Parser.Sequence = (parser, rest...) ->
         returns: ->
             new Parser.Result [@first].concat(@rest)
 
+Parser.Sequence = Sequence
+
 IS = (parser, predicate) ->
     parser.bind (value) ->
         if predicate value
@@ -348,3 +350,22 @@ Parser::separatedBy = (comma) ->
 
         returns: ->
             new Parser.Result [@first].concat(@rest)
+
+
+Parser::followedBy = (suffix) ->
+    parser = this
+
+    DO
+        x: -> parser
+        _: -> suffix
+
+        returns: ->
+            new Parser.Result @x
+
+
+Parser::plus = (parser) ->
+    Sequence this, parser
+
+Parser.delay = (makeParser) ->
+    Parser.wrap (input) ->
+        makeParser().parse(input)

@@ -10,19 +10,22 @@ digitsListParser = ->
 console.log digitsListParser().parse('(2 , 321 , 88,  1, 7)').value 
 # logs [ 2, 321, 88, 1, 7 ]
 
+
+# simpleTableParser (foo)  returns
+# a parser that parses a table of foo
 simpleTableParser = (parser) ->
     # parse a single value for the table
     valueParser = ->
         OR(parser, simpleTableParser parser)
             .ignoreWhitespace()
 
-    pairParser = -> DO
-        key: -> /[a-z]+/
-        colon: -> ':'
-        value: -> valueParser()
-
-        returns: ->
-            new Parser.Result [@key, @value]
+    pairParser = -> 
+        # delays makes pairParser lazy to avoid
+        # infinite mutual recursion with valueParser
+        Parser.delay -> 
+            Parser(/[a-z]+/)
+                .followedBy(':')
+                .plus(valueParser())
 
     associate = (pairs) ->
         # convert [[key, value], ...] to { key: value, ...}
