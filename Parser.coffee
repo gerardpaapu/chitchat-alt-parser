@@ -38,7 +38,9 @@ class Parser
     # 'parse' should be a Function<string, ParseResult>
     @wrap: (parse) ->
         parser = new Parser()
-        parser.parse = parse
+        parser.parse = (input) ->
+            input = Port.from input
+            parse(input)
 
         return parser
 
@@ -74,7 +76,7 @@ class ParseResult
         _function(@value, @rest)
 
 class ParseFailure extends ParseResult
-    constructor: ->
+    constructor: (@input) ->
         ParseFailure.instance ?= @
 
     failed: true
@@ -83,7 +85,7 @@ class ParseFailure extends ParseResult
         new ParseFailure
 
     toString: -> 
-        '<ParseFailure>'
+        "<ParseFailure @ #{ @input.location() }>"
 
 # Primitive Parsers (Result, Fail and Item)
 class Parser.Result extends Parser
@@ -94,28 +96,33 @@ class Parser.Result extends Parser
 
 class Parser.Fail extends Parser
     parse: (input) ->
-        new ParseFailure()
+        new ParseFailure(input)
+
+
+{Port} = require './Port'
 
 class Parser.Item extends Parser
     parse: (input) ->
-        if input.length > 0
-            new ParseResult(input[0], input[1..])
+        input = Port.from(input)
+        if !input.isEmpty()
+            new ParseResult(input.take(1), input.drop(1))
         else
-            new ParseFailure()
+            new ParseFailure(input)
 
 # Simple Matching Parsers
 class Parser.Exactly extends Parser
     constructor: (@str) ->
 
     parse: (input) ->
+        input = Port.from(input) 
         len = @str.length
-        chunk = input.slice(0, len)
-        rest = input.slice(len)
+        chunk = input.take(len)
+        rest = input.drop(len)
 
         if chunk is @str
             new ParseResult(@str, rest)
         else
-            new ParseFailure()
+            new ParseFailure(input)
 
 cloneRegexp = (source) ->
     destination = new RegExp(source.source)
@@ -138,13 +145,14 @@ class Parser.RegExp extends Parser
         cloneRegexp @_pattern
 
     parse: (input) ->
-        match = @getPattern().exec(input)
+        input = Port.from(input)
+        match = @getPattern().exec(input.slice())
 
         if match?
             val = match[@index]
-            new ParseResult(val, input.slice(match[0].length))
+            new ParseResult(val, input.drop(match[0].length))
         else
-            new ParseFailure()
+            new ParseFailure(input)
 
 # Basic Combinator methods
 Parser::bind = (makeParser) ->
@@ -179,7 +187,7 @@ OR = (parser, rest...) ->
             return result
 
         if rest.length is 0
-            new ParseFailure()
+            new ParseFailure(input)
         else
             OR(rest...).parse(input)
 
@@ -210,7 +218,7 @@ NOT = (parser) ->
         if result instanceof ParseFailure
             new ParseResult(true, input)
         else
-            new ParseFailure
+            new ParseFailure(input)
 
 AND = (parser, rest...) ->
     Parser.from(parser).bind (value) ->
@@ -356,17 +364,37 @@ class Parser.Trace extends Parser
 
 Parser::trace = -> new Parser.Trace this
 
+class Parser.WrapWithLocation extends Parser
+    constructor: (parser, @Klass) ->
+        @parser = Parser.from parser
+
+    parse: (input) ->
+        input = Port.from input
+        start = input.location()
+        Klass = @Klass
+
+        @parser.parse(input).then (value, input) ->
+            end = input.location()
+            _value = new Klass(value, start, end)
+            new ParseResult _value, input
+
+Parser::wrapWithLocation = (Klass) ->
+    new Parser.WrapWithLocation this, Klass
+
 Parser::separatedBy = (comma) ->
     parser = this
     _comma = Parser.from(comma)
 
-    DO
+    (DO
         first: -> parser
         rest: -> _comma.and(parser).zeroOrMore()
 
         returns: ->
             new Parser.Result prepend(@first, @rest)
+    ).maybe([])
 
+Parser::separatedByWhitespace = ->
+    @separatedBy /^\s+/m
 
 Parser::followedBy = (suffix) ->
     parser = this
@@ -377,6 +405,27 @@ Parser::followedBy = (suffix) ->
 
         returns: ->
             new Parser.Result @x
+
+Parser::notFollowedBy = (suffix) ->
+    @bind (value) ->
+        Parser.wrap (input) ->
+            result = suffix.parse(input)
+            if result.failed
+                new ParseResult value, input
+            else
+                new ParseFailure(input)
+
+
+Parser::precededBy = (prefix) ->
+    parser = this
+
+    DO
+        _: -> prefix
+        x: -> parser
+
+        returns: ->
+            new Parser.Result @x
+
 
 Parser::skipWhitespace = ->
     @followedBy /^\s*/

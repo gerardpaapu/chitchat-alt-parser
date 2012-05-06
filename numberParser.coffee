@@ -35,5 +35,3 @@ numberParser = ->
 	OR binaryLiteralParser(), hexLiteral(), octalLiteral(), jsonNumberParser()
 
 exports.numberParser = numberParser
-
-console.log numberParser().parse('0o777').value

@@ -70,6 +70,4 @@ stringParser = ->
     OR(_stringParser('\''),
        _stringParser('\"'))
 
-console.log stringParser().parse("'\n\n\n
-    \\n \\\"
-    \\u9099' poop machine")
+exports.stringParser = stringParser

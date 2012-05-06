@@ -7,10 +7,12 @@ and contain zero or more Chitchat expressions
 separated by whitespace
 ###
 
+{Parser} = require './Parser'
+
 arrayParser = (parser) ->
-	parser
-		.zeroOrMore()
+	Parser.from(parser)
 		.separatedBy(/^\s+/m)
+		.ignoreWhitespace()
 		.surroundedBy('#[', ']')
 
 exports.arrayParser = arrayParser
@@ -43,6 +45,8 @@ associate = (pairs) ->
 			throw new SyntaxError("'#{key}' already defined")
 
 		table[key] = value
+
+	table
 
 dictionaryParser = (parser) ->
 	separator = Parser(':').skipWhitespace()
