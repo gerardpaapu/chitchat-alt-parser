@@ -69,8 +69,11 @@ exports.Parser = Parser
 
 class ParseResult
     constructor: (@value, @rest) ->
+        throw 'no value' unless @value?
+        throw 'no string' unless @rest?
 
     failed: false
+    succeeded: true
 
     bind: (_function) ->
         _function(@value, @rest)
@@ -79,6 +82,7 @@ class ParseFailure extends ParseResult
     constructor: (@input) ->
 
     failed: true
+    succeeded: false
 
     bind: (makeParser) ->
         new ParseFailure
