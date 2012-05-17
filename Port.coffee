@@ -36,12 +36,11 @@ class Port
 		column = 0
 
 		while i < @_index
-			switch @source[i++]
-				when '\n'
-					column = 0
-					row++
-				else
-					column++
+			if @source[i++] is '\n'
+				column = 0
+				row++
+			else
+				column++
 
 		new Location(row, column)
 
