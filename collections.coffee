@@ -11,9 +11,8 @@ separated by whitespace
 
 arrayParser = (parser) ->
 	Parser.from(parser)
-		.separatedBy(/^\s+/m)
-		.ignoreWhitespace()
-		.surroundedBy('#[', ']')
+		.separatedByWhitespace()
+		.surroundedByIW('#[', ']')
 
 exports.arrayParser = arrayParser
 
@@ -49,7 +48,7 @@ associate = (pairs) ->
 	table
 
 dictionaryParser = (parser) ->
-	separator = Parser(':').skipWhitespace()
+	separator = Parser(':').ignoreWhitespace()
 
 	keyValuePair = ->
 		stringParser()
@@ -57,9 +56,8 @@ dictionaryParser = (parser) ->
 			.plus(parser)
 
 	keyValuePair()
-		.separatedBy(/^\s+/m)
-		.ignoreWhitespace()
-		.surroundedBy('#{', '}')
+		.separatedByWhitespace()
+		.surroundedByIW('#{', '}')
 		.convert(associate)
 
 exports.dictionaryParser = dictionaryParser

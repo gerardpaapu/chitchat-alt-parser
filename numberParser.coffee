@@ -9,7 +9,7 @@ We allow four types of number literals
 - Binary integers start with '0b' followed by '0' or '1'
 - Octal integers start with '0o' followed by [0-7]+
 ###
-{Parser, OR, DO, Maybe} = require './Parser'
+{Parser, OR, Maybe} = require './Parser'
 
 jsonNumberParser = ->
 	Parser.Sequence(

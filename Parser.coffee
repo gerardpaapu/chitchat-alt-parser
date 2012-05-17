@@ -72,16 +72,15 @@ class ParseResult
 
     failed: false
 
-    then: (_function) ->
+    bind: (_function) ->
         _function(@value, @rest)
 
 class ParseFailure extends ParseResult
     constructor: (@input) ->
-        ParseFailure.instance ?= @
 
     failed: true
 
-    then: (makeParser) ->
+    bind: (makeParser) ->
         new ParseFailure
 
     toString: -> 
@@ -154,14 +153,13 @@ class Parser.RegExp extends Parser
         else
             new ParseFailure(input)
 
-# Basic Combinator methods
-Parser::bind = (makeParser) ->
+Parser::then = (makeParser) ->
     Parser.wrap (input) =>
-        @parse(input).then (value, rest) ->
+        @parse(input).bind (value, rest) ->
             makeParser(value).parse(rest)
 
 Parser.Satisfies = (predicate) ->
-    new Parser.Item().bind (x) ->
+    new Parser.Item().then (x) ->
         if predicate(x)
             new Parser.Result(x)
         else
@@ -221,7 +219,7 @@ NOT = (parser) ->
             new ParseFailure(input)
 
 AND = (parser, rest...) ->
-    Parser.from(parser).bind (value) ->
+    Parser.from(parser).then (value) ->
         if rest.length is 0
             new Parser.Result(value)
         else
@@ -250,7 +248,7 @@ DO = (table) ->
     _DO = (pairs, env) ->
 
         if pairs.length is 0
-            returns.call env
+            new Parser.Result returns.call env
         else
             [first, rest...] = pairs
             [key, _function] = first
@@ -262,7 +260,7 @@ DO = (table) ->
             unless parser?
                 throw new TypeError "bad parser @ #{key}" 
 
-            Parser.from(parser).bind (value) ->
+            Parser.from(parser).then (value) ->
                 env[key] = value
                 _DO(rest, cloneEnv(env))
 
@@ -277,7 +275,7 @@ OneOrMore = (parser) ->
         rest: -> OneOrMore(parser).maybe([])
 
         returns: ->
-            new Parser.Result prepend(@first, @rest)
+            prepend(@first, @rest)
 
 Parser::oneOrMore = -> 
     OneOrMore this
@@ -290,12 +288,11 @@ Parser::zeroOrMore = ->
 
 ignoreWhitespace = (parser) ->
     DO 
-        leading: -> /^\s*/,
+        leading: -> /^\s*/m,
         body: -> parser
-        trailing: -> /^\s*/
+        trailing: -> /^\s*/m
 
-        returns: ->
-            new Parser.Result @body
+        returns: -> @body
 
 Parser::ignoreWhitespace = ->
     ignoreWhitespace this
@@ -309,19 +306,32 @@ Sequence = Parser.Sequence = (parser, rest...) ->
         rest: -> Sequence rest...
 
         returns: ->
-            new Parser.Result prepend(@first, @rest)
+            prepend(@first, @rest)
+
+SequenceIW = Parser.SequenceIW = (parse, rest...) ->
+    if rest.length is 0
+        return Parser.from(parser)
+                        .ignoreWhitespace()
+                        .convert((x) -> [x])
+
+    DO
+        first: -> parser.ignoreWhitespace()
+        rest: -> SequenceIW rest...
+
+        returns: ->
+            prepend(@first, @rest)
 
 Parser.Sequence = Sequence
 
 IS = (parser, predicate) ->
-    parser.bind (value) ->
+    parser.then (value) ->
         if predicate value
             new Parser.Result value
         else
             new Parser.Fail()
 
 ISNT = (parser, predicate) ->
-    parser.bind (value) ->
+    parser.then (value) ->
         if predicate value
             new Parser.Fail()
         else
@@ -334,11 +344,11 @@ Parser::isnt = (predicate) ->
     ISNT this, predicate
 
 Parser::convert = (converter) ->
-    @bind (value) ->
+    @then (value) ->
         new Parser.Result converter(value)
 
 Parser::convertTo = (Klass) ->
-    @bind (value) ->
+    @then (value) ->
         new Parser.Result new Klass(value)
 
 Parser::surroundedBy = (open, close) ->
@@ -348,8 +358,16 @@ Parser::surroundedBy = (open, close) ->
         body: -> parser
         close: -> close
 
-        returns: ->
-            new Parser.Result @body
+        returns: -> @body
+
+Parser::surroundedByIW = (_open, _close) ->
+    open = Parser.from(_open).ignoreWhitespace()
+
+    # don't take whitespace following the close
+    close = Parser.from(_close).precededBy(/\s*/m)
+
+    @surroundedBy(open, close)
+
 
 class Parser.Trace extends Parser
     constructor: (parser) ->
@@ -357,7 +375,7 @@ class Parser.Trace extends Parser
 
     parse: (input) ->
         console.log "TRACE (before): #{input[0..10]}"
-        @parser.parse(input).then (value, input) ->
+        @parser.parse(input).bind (value, input) ->
             console.log "TRACE (value): #{value} "
             console.log "TRACE (after): #{input[0..10]}"
             new ParseResult value, input
@@ -390,8 +408,12 @@ Parser::separatedBy = (comma) ->
         rest: -> _comma.and(parser).zeroOrMore()
 
         returns: ->
-            new Parser.Result prepend(@first, @rest)
+            prepend(@first, @rest)
     ).maybe([])
+
+Parser::separatedByIW = (_comma) ->
+    comma = Parser.from(_comma).ignoreWhitespace()
+    @separatedBy(comma).ignoreWhitespace()
 
 Parser::separatedByWhitespace = ->
     @separatedBy /^\s+/m
@@ -403,11 +425,10 @@ Parser::followedBy = (suffix) ->
         x: -> parser
         _: -> suffix
 
-        returns: ->
-            new Parser.Result @x
+        returns: -> @x
 
 Parser::notFollowedBy = (suffix) ->
-    @bind (value) ->
+    @then (value) ->
         Parser.wrap (input) ->
             result = suffix.parse(input)
             if result.failed
@@ -423,12 +444,11 @@ Parser::precededBy = (prefix) ->
         _: -> prefix
         x: -> parser
 
-        returns: ->
-            new Parser.Result @x
+        returns: -> @x
 
 
 Parser::skipWhitespace = ->
-    @followedBy /^\s*/
+    @followedBy /^\s*/m
 
 Parser::plus = (parser) ->
     Sequence this, parser
