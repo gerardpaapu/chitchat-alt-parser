@@ -7,7 +7,7 @@ assert = require 'assert'
 simpleExpression = -> Parser.from '1'
 complexParser = expressionParser(simpleExpression)
 
-vows.describe('Parsing Numbers')
+vows.describe('Parsing Accessors')
     .addBatch(
         'When Parsing a simple expression':
             topic: -> complexParser.parse '1 1'
