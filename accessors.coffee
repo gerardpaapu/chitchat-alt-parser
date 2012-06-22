@@ -55,7 +55,7 @@ class PrimitiveAccessor
     constructor: (@root, @key) ->
 
 class PrototypeAccessor
-    constructor: (@root, key) ->
+    constructor: (@root, @key) ->
 
 wrap = (Klass) ->
     (key) ->
@@ -85,8 +85,6 @@ expressionParser = (simpleExpressionParser) ->
             wrap root [x:xs] = wrap x(root) xs
             ###
             _wrap = (root, suffixes) ->
-                unless root? and suffixes?
-                    throw new Error ('bad arguments to wrap')
                 if suffixes.length is 0
                     root
                 else
