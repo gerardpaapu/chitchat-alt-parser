@@ -5,9 +5,7 @@ expressions in between parentheses
 
 {Parser, OR} = require './Parser'
 {symbolParser} = require './symbol'
-
-class SyntaxList
-    constructor: (@items) ->
+{SyntaxList} = require '../common/common'
 
 listParser = (parser) ->
     Parser.from(parser)

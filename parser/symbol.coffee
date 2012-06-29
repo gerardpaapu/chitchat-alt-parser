@@ -1,7 +1,5 @@
 {Parser} = require './Parser'
-
-class Symbol
-    constructor: (@value) ->
+{Symbol} = require '../common/common'
 
 symbolParser = ->
     Parser

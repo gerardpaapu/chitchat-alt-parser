@@ -20,6 +20,7 @@ single quotes or double quotes and we allow for quoting
 of single quotes (i.e. we added "'" to our escape table)
 ###
 {Parser, OR} = require './Parser'
+{AtomLiteral} = require '../common/common'
 
 _stringParser = (quote) ->
     backslash = '\\'
@@ -69,5 +70,6 @@ _stringParser = (quote) ->
 stringParser = ->
     OR(_stringParser('\''),
        _stringParser('\"'))
+    .convertTo(AtomLiteral)
 
 exports.stringParser = stringParser

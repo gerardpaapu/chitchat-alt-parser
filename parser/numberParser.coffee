@@ -10,6 +10,7 @@ We allow four types of number literals
 - Octal integers start with '0o' followed by [0-7]+
 ###
 {Parser, OR, Maybe} = require './Parser'
+{AtomLiteral} = require '../common/common'
 
 jsonNumberParser = ->
 	Parser.Sequence(
@@ -32,6 +33,6 @@ octalLiteral = ->
 		.convert((x) -> parseInt(x, 8))
 
 numberParser = ->
-	OR binaryLiteralParser(), hexLiteral(), octalLiteral(), jsonNumberParser()
+	OR(binaryLiteralParser(), hexLiteral(), octalLiteral(), jsonNumberParser()).convertTo(AtomLiteral)
 
 exports.numberParser = numberParser

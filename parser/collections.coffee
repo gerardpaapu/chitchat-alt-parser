@@ -8,11 +8,13 @@ separated by whitespace
 ###
 
 {Parser} = require './Parser'
+{ArrayLiteral} = require '../common/common'
 
 arrayParser = (parser) ->
 	Parser.from(parser)
 		.separatedByWhitespace()
 		.surroundedByIW('#[', ']')
+		.convertTo(ArrayLiteral)
 
 exports.arrayParser = arrayParser
 
@@ -35,6 +37,7 @@ A key-value pair
 
 {stringParser} = require './stringParser'
 {Sequence} = require './Parser'
+{DictionaryLiteral} = require '../common/common'
 
 associate = (pairs) ->
 	# convert from [[key, value], ...] -> { key: value, ...}
@@ -45,7 +48,7 @@ associate = (pairs) ->
 
 		table[key] = value
 
-	table
+	new DictionaryLiteral table
 
 dictionaryParser = (parser) ->
 	separator = Parser(':').ignoreWhitespace()

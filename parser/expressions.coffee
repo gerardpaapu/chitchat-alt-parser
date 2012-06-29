@@ -1,4 +1,3 @@
-
 {Parser, OR} = require './Parser'
 {stringParser} = require './stringParser'
 {numberParser} = require './numberParser'
@@ -20,4 +19,4 @@ expressionParser = ->
         -> arrayParser(expressionParser),
         -> dictionaryParser(expressionParser),
         -> listParser(expressionParser)
-    ).skipping(comments)
+    ).skipping(comments, whitespace)
