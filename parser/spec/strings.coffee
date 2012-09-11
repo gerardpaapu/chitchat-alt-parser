@@ -1,5 +1,6 @@
 vows = require 'vows'
 assert = require 'assert'
+{AtomLiteral} = require('../../common/common.coffee')
 
 {stringParser} = require '../stringParser'
 
@@ -10,7 +11,10 @@ vows.describe('Parsing Strings')
 
 			'It succeeds': (t) -> assert.ok not t.failed
 
-			'With the correct value': (t) -> assert.equal t.value, ''
+			'With the correct value': (t) ->
+                                atom = t.value
+                                assert.ok(atom instanceof AtomLiteral)
+                                assert.equal(atom.value, '')
 
 			'Leaving the remainder for the next parse': (t) ->
 				assert.equal t.rest,' rest'
@@ -20,8 +24,10 @@ vows.describe('Parsing Strings')
 
 			'It succeeds': (t) -> assert.ok not t.failed
 
-			'With the correct value': (t) -> 
-				assert.equal t.value, '\u99ff'
+			'With the correct value': (t) ->
+                                atom = t.value
+                                assert.ok(atom instanceof AtomLiteral)
+                                assert.equal(atom.value, '\u99ff')
 
 			'Leaving the remainder for the next parse': (t) ->
 				assert.equal t.rest, ' rest'

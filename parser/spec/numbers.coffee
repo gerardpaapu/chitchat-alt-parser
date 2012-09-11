@@ -3,17 +3,19 @@ assert = require 'assert'
 
 {numberParser} = require '../numberParser'
 {Port} = require '../Port'
+{AtomLiteral} = require('../../common/common.coffee')
 
 vows.describe('Parsing Numbers')
 	.addBatch(
 		'When Parsing a binary':
-
 			topic: -> numberParser().parse new Port('0b10101 rest')
 
 			'Succeeds': (t) -> assert.ok not t.failed
 
-			'With the correct value': (t) -> 
-				assert.equal t.value, parseInt('10101', 2)
+			'With the correct value': (t) ->
+                                literal = t.value
+                                assert.ok(literal instanceof AtomLiteral)
+                                assert.equal(literal.value, parseInt('10101', 2))
 
 			'Leaving the remainder for the next parser': (t) ->
 				assert.equal t.rest, ' rest'
@@ -25,7 +27,9 @@ vows.describe('Parsing Numbers')
 			'Succeeds': (t) -> assert.ok not t.failed
 
 			'With the correct value': (t) ->
-				assert.equal t.value, parseInt('777', 8)
+                                literal = t.value
+                                assert.ok(literal instanceof AtomLiteral)
+                                assert.equal(literal.value, parseInt('777', 8))
 
 			'Leaving the remainder for the next parser': (t) ->
 				assert.equal t.rest, ' rest'
@@ -37,7 +41,9 @@ vows.describe('Parsing Numbers')
 			'Succeeds': (t) -> assert.ok not t.failed
 
 			'With the correct value': (t) ->
-				assert.equal t.value, 0xbada55
+                                literal = t.value
+                                assert.ok(literal instanceof AtomLiteral)
+                                assert.equal(literal.value, 0xbada55)
 
 			'Leaving the remainder for the next parser': (t) ->
 				assert.equal t.rest, ' rest'
@@ -49,7 +55,9 @@ vows.describe('Parsing Numbers')
 			'Succeeds': (t) -> assert.ok not t.failed
 
 			'With the correct value': (t) -> 
-				assert.equal t.value, 8989923
+                                literal = t.value
+                                assert.ok(literal instanceof AtomLiteral)
+                                assert.equal(literal.value, 8989923)
 
 			'Leaving the remainder for the next parser': (t) ->
 				assert.equal t.rest, ' rest'
@@ -61,7 +69,9 @@ vows.describe('Parsing Numbers')
 			'Succeeds': (t) -> assert.ok not t.failed
 
 			'With the correct value': (t) ->
-				assert.equal t.value, parseFloat('04.89763', 10)
+                                literal = t.value
+                                assert.ok(literal instanceof AtomLiteral)
+                                assert.equal(literal.value, parseFloat('04.89763', 10))
 
 			'Leaving the remainder for the next parser': (t) ->
 				assert.equal t.rest, ' rest'
@@ -73,7 +83,9 @@ vows.describe('Parsing Numbers')
 			'Succeeds': (t) -> assert.ok not t.failed
 
 			'With the correct value': (t) -> 
-				assert.equal t.value, parseFloat('4.2e100', 10)
+                                literal = t.value
+                                assert.ok(literal instanceof AtomLiteral)
+                                assert.equal literal.value, parseFloat('4.2e100', 10)
 
 			'Leaving the remainder for the next parser': (t) ->
 				assert.equal t.rest, ' rest'
