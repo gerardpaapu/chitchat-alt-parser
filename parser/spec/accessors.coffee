@@ -14,7 +14,7 @@ vows.describe('Parsing Accessors')
 
             'Succeeds': (t) -> assert.ok t.succeeded
 
-            'With the correct value': (t) -> 
+            'With the correct value': (t) ->
                 assert.equal t.value, '1'
 
             'Leaving the remainder for the next parser': (t) ->
@@ -25,7 +25,7 @@ vows.describe('Parsing Accessors')
 
             'Succeeds': (t) -> assert.ok t.succeeded
 
-            'With the correct value': (t) -> 
+            'With the correct value': (t) ->
                 assert.ok t.value instanceof DotAccessor
                 assert.equal t.value.root, '1'
                 assert.equal t.value.key, 'foo'

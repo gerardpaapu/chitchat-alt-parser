@@ -2,16 +2,19 @@ vows = require 'vows'
 assert = require 'assert'
 
 {arrayParser, dictionaryParser} = require '../collections'
+{ArrayLiteral, DictionaryLiteral} = require('../../common/common.coffee')
 
 vows.describe('Parsing arrays')
 	.addBatch(
 		'When parsing an empty Array':
 			topic: -> arrayParser('1').parse('#[] rest')
 
-			'It succeeds': (t) -> assert.ok not t.failed
+			'It succeeds': (t) -> assert.ok(not t.failed)
 
 			'With the correct value': (t) ->
-				assert.equal JSON.stringify(t.value), '[]'
+                                literal = t.value
+                                assert.ok(literal instanceof ArrayLiteral)
+                                assert.equal(JSON.stringify(literal.items), '[]')
 
 			'Leaving the remainder for the next parser': (t) ->
 				assert.equal t.rest, ' rest'
@@ -23,7 +26,9 @@ vows.describe('Parsing arrays')
 			'It succeeds': (t) -> assert.ok not t.failed
 
 			'With the correct value': (t) ->
-				assert.equal JSON.stringify(t.value), '["1","1","1"]'
+                                literal = t.value
+                                assert.ok(literal instanceof ArrayLiteral)
+                                assert.equal(JSON.stringify(literal.items), '["1","1","1"]')
 
 			'Leaving the remainder for the next parser': (t) ->
 				assert.equal t.rest, ' rest'
@@ -35,7 +40,9 @@ vows.describe('Parsing arrays')
 			'It succeeds': (t) -> assert.ok not t.failed
 
 			'With the correct value': (t) ->
-				assert.equal JSON.stringify(t.value), '{}'
+                                literal = t.value
+                                assert.ok(literal instanceof DictionaryLiteral)
+                                assert.equal(JSON.stringify(literal.table), '{}')
 
 			'Leaving the remainder for the next parser': (t) ->
 				assert.equal t.rest.toString(), ' rest'
@@ -46,9 +53,11 @@ vows.describe('Parsing arrays')
 			'It succeeds': (t) -> assert.ok not t.failed
 
 			'With the correct value': (t) ->
-				assert.equal JSON.stringify(t.value), '{"poop":"1","cat":"1"}'
+                                literal = t.value
+                                assert.ok(literal instanceof DictionaryLiteral)
+                                assert.equal(JSON.stringify(literal.table), '{"poop":"1","cat":"1"}')
 
 			'Leaving the remainder for the next parser': (t) ->
-				assert.equal t.rest.toString(), ' rest'
+                                assert.equal t.rest.toString(), ' rest'
 	)
 	.export(module)

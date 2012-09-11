@@ -11,6 +11,6 @@ listParser = (parser) ->
     Parser.from(parser)
         .separatedByWhitespace()
         .surroundedByIW('(', ')')
-        .convertTo SyntaxList
+        .convertTo(SyntaxList)
 
 exports.listParser = listParser

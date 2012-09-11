@@ -40,21 +40,22 @@ A key-value pair
 {DictionaryLiteral} = require '../common/common'
 
 associate = (pairs) ->
-	# convert from [[key, value], ...] -> { key: value, ...}
-	table = {}
-	for [key, value] in pairs
-		if table[key]?
-			throw new SyntaxError("'#{key}' already defined")
+        # convert from [[key, value], ...] -> { key: value, ...}
+        table = {}
+        for [key, value] in pairs
+                if table[key]?
+                        throw new SyntaxError("'#{key}' already defined")
 
-		table[key] = value
+                table[key] = value
 
-	new DictionaryLiteral table
+        new DictionaryLiteral(table)
 
 dictionaryParser = (parser) ->
 	separator = Parser(':').ignoreWhitespace()
 
 	keyValuePair = ->
 		stringParser()
+                        .convert((token) -> token.value)
 			.followedBy(separator)
 			.plus(parser)
 

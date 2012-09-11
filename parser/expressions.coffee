@@ -5,6 +5,7 @@
 {arrayParser, dictionaryParser} = require './collections'
 {listParser} = require './lists'
 {comment} = require './comments'
+{whitespace} = require './whitespace'
 
 comments = comment.zeroOrMore()
 
@@ -19,4 +20,10 @@ expressionParser = ->
         -> arrayParser(expressionParser),
         -> dictionaryParser(expressionParser),
         -> listParser(expressionParser)
-    ).skipping(comments, whitespace)
+    )
+
+expressionsParser =
+    Parser.delay(expressionParser)
+
+exports.expressionsParser = expressionsParser
+exports.expressionParser = expressionParser

@@ -29,7 +29,7 @@ _stringParser = (quote) ->
         OR escaped(), unescaped()
 
     unescaped = ->
-        new Parser.Item().isnt (x) -> 
+        new Parser.Item().isnt (x) ->
             x is quote or x is backslash
 
     escapeTable =
@@ -56,7 +56,7 @@ _stringParser = (quote) ->
             .convert((arr) -> arr[1])
 
             # fail unless it is in the table
-            .is((code) -> escapeTable[code]?) 
+            .is((code) -> escapeTable[code]?)
             .convert((code) -> escapeTable[code])
 
     escaped = ->
