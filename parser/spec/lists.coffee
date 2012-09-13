@@ -18,7 +18,7 @@ vows.describe('Parsing Syntax lists')
 
             'With the correct value': (t) ->
                 assert.ok t.value instanceof SyntaxList
-                assert.equal JSON.stringify(t.value.children), '[]'
+                assert.equal JSON.stringify(t.value.value), '[]'
 
             'Leaving the remainder for the next parser': (t) ->
                 assert.equal t.rest, ' rest'
@@ -30,7 +30,7 @@ vows.describe('Parsing Syntax lists')
 
             'With the correct value': (t) ->
                 assert.ok t.value instanceof SyntaxList
-                assert.equal JSON.stringify(t.value.children), '[1,1]'
+                assert.equal JSON.stringify(t.value.value), '[1,1]'
 
             'Leaving the remainder for the next parser': (t) ->
                 assert.equal t.rest, ' rest'

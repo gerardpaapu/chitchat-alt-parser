@@ -8,11 +8,11 @@ assert = require 'assert'
 
 isAFunction = (stx) ->
     stx instanceof SyntaxList and
-    stx.children and
-    stx.children[0] instanceof Symbol and
-    stx.children[0].value is 'function' and
-    stx.children[1] instanceof SyntaxList and
-    stx.children[1].children.every((t) -> t instanceof Symbol)
+    stx.value and
+    stx.value[0] instanceof Symbol and
+    stx.value[0].value is 'function' and
+    stx.value[1] instanceof SyntaxList and
+    stx.value[1].value.every((t) -> t instanceof Symbol)
 
 lambdaParser = lambda(Parser.from('1'), whitespace)
 

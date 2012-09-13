@@ -30,7 +30,7 @@ vows.describe('Parsing Accessors')
 
             'With the correct value': (t) ->
                 assert.equal t.value.root, '1'
-                assert.equal t.value.key, 'foo'
+                assert.equal t.value.key.value, 'foo'
 
             'Leaving the remainder for the next parser': (t) ->
                 assert.equal t.rest, ' 1'
@@ -58,8 +58,8 @@ vows.describe('Parsing Accessors')
             'With the correct value': (t) -> 
                 assert.ok t.value instanceof DotAccessor
                 assert.equal t.value.root.root, '1'
-                assert.equal t.value.root.key, 'foo'
-                assert.equal t.value.key, 'bar'
+                assert.equal t.value.root.key.value, 'foo'
+                assert.equal t.value.key.value, 'bar'
 
             'Leaving the remainder for the next parser': (t) ->
                 assert.equal t.rest.toString(), ' 1'
@@ -74,7 +74,7 @@ vows.describe('Parsing Accessors')
                 assert.equal t.value.root, '1'
                 assert.ok t.value.key instanceof DotAccessor
                 assert.equal t.value.key.root, '1'
-                assert.equal t.value.key.key, 'foo'
+                assert.equal t.value.key.key.value, 'foo'
 
             'Leaving the remainder for the next parser': (t) ->
                 assert.equal t.rest, ' 1'
@@ -88,7 +88,7 @@ vows.describe('Parsing Accessors')
             'With the correct value': (t) ->
                 assert.ok t.value instanceof PrimitiveAccessor
                 assert.equal t.value.root, '1'
-                assert.equal t.value.key, 'foo'
+                assert.equal t.value.key.value, 'foo'
 
             'Leaving the remainder for the next parser': (t) ->
                 assert.equal t.rest, ' 1'
@@ -117,9 +117,9 @@ vows.describe('Parsing Accessors')
                 simple = t.value.root
                 assert.ok simple instanceof PrimitiveAccessor
                 assert.equal simple.root, '1'
-                assert.equal simple.key, 'foo'
+                assert.equal simple.key.value, 'foo'
 
-                assert.equal t.value.key, 'bar'
+                assert.equal t.value.key.value, 'bar'
 
             'Leaving the remainder for the next parser': (t) ->
                 assert.equal t.rest, ' 1'
@@ -137,7 +137,7 @@ vows.describe('Parsing Accessors')
 
                 assert.ok nested instanceof PrimitiveAccessor
                 assert.equal nested.root, '1'
-                assert.equal nested.key, 'foo'
+                assert.equal nested.key.value, 'foo'
 
             'Leaving the remainder for the next parser': (t) ->
                 assert.equal t.rest, ' 1'
@@ -150,7 +150,7 @@ vows.describe('Parsing Accessors')
             'With the correct value': (t) ->
                 assert.ok t.value instanceof PrototypeAccessor
                 assert.equal t.value.root, '1'
-                assert.equal t.value.key, 'foo'
+                assert.equal t.value.key.value, 'foo'
 
             'Leaving the remainder for the next parser': (t) ->
                 assert.equal t.rest, ' 1'
@@ -177,9 +177,9 @@ vows.describe('Parsing Accessors')
                 simple = t.value.root
                 assert.ok simple instanceof PrototypeAccessor
                 assert.equal simple.root, '1'
-                assert.equal simple.key, 'foo'
+                assert.equal simple.key.value, 'foo'
 
-                assert.equal t.value.key, 'bar'
+                assert.equal t.value.key.value, 'bar'
 
             'Succeeds': (t) -> assert.ok t.succeeded
 
@@ -199,7 +199,7 @@ vows.describe('Parsing Accessors')
 
                 assert.ok nested instanceof PrototypeAccessor
                 assert.equal nested.root, '1'
-                assert.equal nested.key, 'foo'
+                assert.equal nested.key.value, 'foo'
 
             'Leaving the remainder for the next parser': (t) ->
                 assert.equal t.rest, ' 1'

@@ -11,11 +11,11 @@ Broadly speaking:
 class Syntax 
 
 class SyntaxList extends Syntax
-    constructor: (@children) ->
+    constructor: (@value) ->
 
     toJSON: -> 
         type: 'list'
-        value: @children
+        value: @value
 
 class AtomLiteral extends Syntax
     # value is a number, string, null, undefined, true or false
