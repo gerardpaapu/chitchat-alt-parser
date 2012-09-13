@@ -41,12 +41,12 @@ class ArrayLiteral extends Syntax
         value: @value
 
 class DictionaryLiteral extends Syntax
-    # @table is a dictionary of string, Syntax
-    constructor: (@table) ->
+    # @value is a dictionary of string, Syntax
+    constructor: (@value) ->
 
     toJSON: ->
         type: 'dictionary-literal'
-        value: @table
+        value: @value
 
 class Symbol extends Syntax
     constructor: (@value) ->

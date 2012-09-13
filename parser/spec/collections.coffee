@@ -46,7 +46,7 @@ vows.describe('Parsing arrays')
 			'With the correct value': (t) ->
                                 literal = t.value
                                 assert.ok(literal instanceof DictionaryLiteral)
-                                assert.equal(JSON.stringify(literal.table), '{}')
+                                assert.equal(JSON.stringify(literal.value), '{}')
 
 			'Leaving the remainder for the next parser': (t) ->
 				assert.equal t.rest.toString(), ' rest'
@@ -59,7 +59,7 @@ vows.describe('Parsing arrays')
 			'With the correct value': (t) ->
                                 literal = t.value
                                 assert.ok(literal instanceof DictionaryLiteral)
-                                assert.equal(JSON.stringify(literal.table), '{"poop":"1","cat":"1"}')
+                                assert.equal(JSON.stringify(literal.value), '{"poop":"1","cat":"1"}')
 
 			'Leaving the remainder for the next parser': (t) ->
                                 assert.equal t.rest.toString(), ' rest'
