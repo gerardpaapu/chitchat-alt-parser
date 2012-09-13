@@ -5,8 +5,8 @@
 ;;; It maintains immutability, an order, and
 ;;; does not contain duplicates
 ;;; 
-;;; Items of the Ordered Set should implement 'Ord'
-(class OrderedSet
+;;; Items of the Ordered Set should implement '<' and '>' 
+(class OrderedSet ()
     (constructor (items ordered distinct)
         (set! this.items (or items #[]))
 
@@ -27,7 +27,7 @@
     (method (slice a b)
         (this.items slice a, b))
 
-    (method (nth i)
+    (method (getItem i)
         this.items.[i])
 
     (method (length)

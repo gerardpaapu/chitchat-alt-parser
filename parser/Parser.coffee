@@ -400,6 +400,20 @@ class Parser.Trace extends Parser
 
 Parser::trace = (msg) -> new Parser.Trace(this, msg)
 
+class Parser.WithLocation extends Parser
+    constructor: (parser, @callback) ->
+
+    parse: (input) ->
+        input = Port.from input
+        start = input.location()
+        callback = @callback
+
+        @parser.parse(input).then (value, input) ->
+            end = input.location()
+            _value = callback(value, start, end)
+            new ParseResult _value, input
+
+
 class Parser.WrapWithLocation extends Parser
     constructor: (parser, @Klass) ->
         @parser = Parser.from parser

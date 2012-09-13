@@ -47,15 +47,7 @@ to `foo['bar'] = baz` (roughly).
 ###
 {Parser, SequenceIW, OR} = require './Parser'
 {symbolParser} = require './symbol'
-
-class DotAccessor
-    constructor: (@root, @key) ->
-
-class PrimitiveAccessor
-    constructor: (@root, @key) ->
-
-class PrototypeAccessor
-    constructor: (@root, @key) ->
+{DotAccessor, PrimitiveAccessor, PrototypeAccessor, AtomLiteral} = require('../common/common')
 
 wrap = (Klass) ->
     (key) ->
@@ -110,7 +102,7 @@ keyParser = (simpleExpressionParser) ->
     expr = Parser.delay ->
         expressionParser(simpleExpressionParser)
 
-    OR(symbolParser().convert((x) -> x.value), 
+    OR(symbolParser().convert((x) -> new AtomLiteral(x.value)), 
        expr.surroundedBy('[', ']'))
 
 exports.expressionParser = expressionParser
