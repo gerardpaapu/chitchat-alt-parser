@@ -10,10 +10,10 @@ separated by whitespace
 {Parser} = require './Parser'
 {ArrayLiteral} = require '../common/common'
 
-arrayParser = (parser) ->
+arrayParser = (parser, whitespace) ->
 	Parser.from(parser)
-		.separatedByWhitespace()
-		.surroundedByIW('#[', ']')
+		.separatedBy(whitespace)
+		.surroundedByIW('#[', ']', whitespace)
 		.convertTo(ArrayLiteral)
 
 exports.arrayParser = arrayParser
@@ -50,8 +50,8 @@ associate = (pairs) ->
 
         new DictionaryLiteral(table)
 
-dictionaryParser = (parser) ->
-	separator = Parser(':').ignoreWhitespace()
+dictionaryParser = (parser, whitespace) ->
+	separator = Parser(':').ignore(whitespace)
 
 	keyValuePair = ->
 		stringParser()
@@ -60,8 +60,8 @@ dictionaryParser = (parser) ->
 			.plus(parser)
 
 	keyValuePair()
-		.separatedByWhitespace()
-		.surroundedByIW('#{', '}')
+		.separatedBy(whitespace)
+		.surroundedByIW('#{', '}', whitespace)
 		.convert(associate)
 
 exports.dictionaryParser = dictionaryParser

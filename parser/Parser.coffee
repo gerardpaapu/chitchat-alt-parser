@@ -290,13 +290,19 @@ ZeroOrMore = (parser) ->
 Parser::zeroOrMore = ->
     ZeroOrMore this
 
-ignoreWhitespace = (parser) ->
+ignore = (parser, ws) ->
     DO 
-        leading: -> /^\s*/m,
+        leading: -> ws,
         body: -> parser
-        trailing: -> /^\s*/m
+        trailing: -> ws
 
         returns: -> @body
+
+ignoreWhitespace = (parser) ->
+    ignore(parser, /^\s*/m)
+
+Parser::ignore = (p) ->
+    ignore(this, p)
 
 Parser::ignoreWhitespace = ->
     ignoreWhitespace this
@@ -364,11 +370,12 @@ Parser::surroundedBy = (open, close) ->
 
         returns: -> @body
 
-Parser::surroundedByIW = (_open, _close) ->
-    open = Parser.from(_open).ignoreWhitespace()
+Parser::surroundedByIW = (_open, _close, ws) ->
+    ws ?= /^\s*/m
+    open = Parser.from(_open).ignore(ws)
 
     # don't take whitespace following the close
-    close = Parser.from(_close).precededBy(/\s*/m)
+    close = Parser.from(_close).precededBy(ws)
 
     @surroundedBy(open, close)
 
@@ -415,12 +422,14 @@ Parser::separatedBy = (comma) ->
             prepend(@first, @rest)
     ).maybe([])
 
-Parser::separatedByIW = (_comma) ->
-    comma = Parser.from(_comma).ignoreWhitespace()
-    @separatedBy(comma).ignoreWhitespace()
+Parser::separatedByIW = (_comma, ws) ->
+    ws ?= Parser.from(/^\s*/m)
+
+    comma = Parser.from(_comma).ignore(ws)
+    @separatedBy(comma).ignore(ws)
 
 Parser::separatedByWhitespace = ->
-    @separatedBy /^\s+/m
+    @separatedBy(/^\s*/m)
 
 Parser::followedBy = (suffix) ->
     parser = this

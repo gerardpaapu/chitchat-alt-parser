@@ -17,6 +17,9 @@ class AtomLiteral extends Syntax
     # value is a number, string, null, undefined, true or false
     constructor: (@value) ->
 
+class ArgumentLiteral extends Syntax
+    constructor: (@value) ->
+
 class ArrayLiteral extends Syntax
     # @items is an Array of Syntax
     constructor: (@items) ->
@@ -32,6 +35,7 @@ module.exports =
     Syntax: Syntax
     SyntaxList: SyntaxList
     AtomLiteral: AtomLiteral
+    ArgumentLiteral: ArgumentLiteral
     ArrayLiteral: ArrayLiteral
     DictionaryLiteral: DictionaryLiteral
     Symbol: Symbol

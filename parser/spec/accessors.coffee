@@ -25,8 +25,10 @@ vows.describe('Parsing Accessors')
 
             'Succeeds': (t) -> assert.ok t.succeeded
 
-            'With the correct value': (t) ->
+            'With a DotAccessor': (t) ->
                 assert.ok t.value instanceof DotAccessor
+
+            'With the correct value': (t) ->
                 assert.equal t.value.root, '1'
                 assert.equal t.value.key, 'foo'
 

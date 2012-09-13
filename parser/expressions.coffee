@@ -1,14 +1,17 @@
 {Parser, OR} = require './Parser'
 {stringParser} = require './stringParser'
+{argumentLiteral} = require './argumentLiteral'
 {numberParser} = require './numberParser'
 {symbolParser} = require './symbol'
 {arrayParser, dictionaryParser} = require './collections'
 {listParser} = require './lists'
-{comment} = require './comments'
-{whitespace} = require './whitespace'
+{lambda} = require('./lambda')
 _expressionParser = require('./accessors').expressionParser
 
-comments = comment.zeroOrMore()
+whitespace = Parser.from(/^(\s|,)+/m)
+comment = Parser.Sequence(/;.*/).trace()
+_whitespace = OR(whitespace, comment).zeroOrMore()
+
 
 lazyOR = (parsers...) ->
     OR (Parser.delay f for f in parsers)...
@@ -18,16 +21,17 @@ simpleExpression = ->
         stringParser,
         numberParser,
         symbolParser,
-        -> arrayParser(expressionParser()),
-        -> dictionaryParser(expressionParser()),
-        -> listParser(expressionParser())
+        -> arrayParser(expressionParser(), _whitespace),
+        -> dictionaryParser(expressionParser(), _whitespace),
+        -> listParser(expressionParser(), _whitespace)
+        -> lambda(expressionParser(), _whitespace)
     )
 
 expressionParser = ->
     _expressionParser(simpleExpression)
 
 expressionsParser =
-    Parser.delay(expressionParser).separatedByWhitespace()
+    Parser.delay(expressionParser).separatedBy(_whitespace)
 
 exports.expressionsParser = expressionsParser
 exports.expressionParser = expressionParser
