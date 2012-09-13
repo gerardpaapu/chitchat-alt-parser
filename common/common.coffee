@@ -33,12 +33,12 @@ class ArgumentLiteral extends Syntax
         value: @value
 
 class ArrayLiteral extends Syntax
-    # @items is an Array of Syntax
-    constructor: (@items) ->
+    # @value is an Array of Syntax
+    constructor: (@value) ->
 
     toJSON: ->
         type: 'array-literal'
-        value: @items
+        value: @value
 
 class DictionaryLiteral extends Syntax
     # @table is a dictionary of string, Syntax

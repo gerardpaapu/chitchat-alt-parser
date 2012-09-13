@@ -18,7 +18,7 @@ vows.describe('Parsing arrays')
 
 			'With the correct value': (t) ->
                 literal = t.value
-                assert.equal(JSON.stringify(literal.items), '[]')
+                assert.equal(JSON.stringify(literal.value), '[]')
 
 			'Leaving the remainder for the next parser': (t) ->
 				assert.equal t.rest, ' rest'
@@ -32,7 +32,7 @@ vows.describe('Parsing arrays')
 			'With the correct value': (t) ->
                 literal = t.value
                 assert.ok(literal instanceof ArrayLiteral)
-                assert.equal(JSON.stringify(literal.items), '["1","1","1"]')
+                assert.equal(JSON.stringify(literal.value), '["1","1","1"]')
 
 			'Leaving the remainder for the next parser': (t) ->
 				assert.equal t.rest, ' rest'
