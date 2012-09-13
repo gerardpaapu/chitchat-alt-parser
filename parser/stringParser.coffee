@@ -15,9 +15,11 @@ escaped characters are either:
     - '\u' followed by 4 hex digits (a unicode code point)
     - '\"',  followed by a single character (from the escape table)
 
-our strings are JSON strings except that we allow either 
-single quotes or double quotes and we allow for quoting
-of single quotes (i.e. we added "'" to our escape table)
+our strings are JSON strings except:
+
+    - we allow either single quotes or double quotes
+    - we allow for quoting of single quotes (i.e. we added "'" to our escape table)
+    - we allow newlines in the body
 ###
 {Parser, OR} = require './Parser'
 {AtomLiteral} = require '../common/common'

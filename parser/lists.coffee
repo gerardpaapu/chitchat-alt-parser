@@ -7,10 +7,10 @@ expressions in between parentheses
 {symbolParser} = require './symbol'
 {SyntaxList} = require '../common/common'
 
-listParser = (parser) ->
+listParser = (parser, ws) ->
     Parser.from(parser)
-        .separatedByWhitespace()
-        .surroundedByIW('(', ')')
+        .separatedBy(ws)
+        .surroundedByIW('(', ')', ws)
         .convertTo(SyntaxList)
 
 exports.listParser = listParser

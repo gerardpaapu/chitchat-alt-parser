@@ -7,7 +7,7 @@ assert = require 'assert'
 
 parseOne = Parser('1').convert((str) -> 1)
 
-parseOneList = listParser(parseOne)
+parseOneList = listParser(parseOne, /^\s*/m)
 
 vows.describe('Parsing Syntax lists')
     .addBatch(

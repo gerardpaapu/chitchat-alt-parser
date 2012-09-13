@@ -173,7 +173,7 @@ ParseResult::otherwise = (_function) ->
     this
 
 ParseFailure::otherwise = (_function) ->
-    _function()
+    _function(this)
 
 Parser::inverse = (makeParser) ->
     Parser.wrap (input) =>
@@ -381,17 +381,24 @@ Parser::surroundedByIW = (_open, _close, ws) ->
 
 
 class Parser.Trace extends Parser
-    constructor: (parser) ->
+    constructor: (parser, msg) ->
         @parser = Parser.from parser
+        @msg = if msg then msg + ' ' else ''
 
     parse: (input) ->
-        console.log "TRACE (before): #{input[0..10]}"
-        @parser.parse(input).bind (value, input) ->
-            console.log "TRACE (value): #{value} "
-            console.log "TRACE (after): #{input[0..10]}"
-            new ParseResult value, input
+        msg = @msg
+        console.log "TRACE #{msg}(before): #{input[0..10]}"
+        @parser.parse(input)
+            .otherwise (failure) ->
+                console.log "TRACE #{msg}(failed)"
+                failure
 
-Parser::trace = -> new Parser.Trace this
+            .bind (value, input) ->
+                console.log "TRACE #{msg}(value): #{value} "
+                console.log "TRACE #{msg}(after): #{input[0..10]}"
+                new ParseResult value, input
+
+Parser::trace = (msg) -> new Parser.Trace(this, msg)
 
 class Parser.WrapWithLocation extends Parser
     constructor: (parser, @Klass) ->

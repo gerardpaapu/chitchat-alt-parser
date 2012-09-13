@@ -7,7 +7,7 @@
 ;;; 
 ;;; Items of the Ordered Set should implement 'Ord'
 (class OrderedSet
-    (constructor (items, ordered, distinct)
+    (constructor (items ordered distinct)
         (set! this.items (or items #[]))
 
         ;; ensure the qualities of the ordered set in this.items
